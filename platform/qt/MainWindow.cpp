@@ -6710,11 +6710,12 @@ void MainWindow::updateGaloshUiState( void )
     const bool lumaOn = ui->horizontalSliderGaloshLuma->value() > 0;
     const bool chromaOn = lumaOn && ui->horizontalSliderGaloshChroma->value() > 0;
 
+    /* The sliders stay adjustable at all times so values can be preset while
+     * luma/chroma are off; only the labels are grayed out to show what is
+     * currently taking effect. */
     ui->label_GaloshChromaText->setEnabled( lumaOn );
-    ui->horizontalSliderGaloshChroma->setEnabled( lumaOn );
     ui->label_GaloshChroma->setEnabled( lumaOn );
     ui->label_GaloshChromaPreserveText->setEnabled( chromaOn );
-    ui->horizontalSliderGaloshChromaPreserve->setEnabled( chromaOn );
     ui->label_GaloshChromaPreserve->setEnabled( chromaOn );
 
     /* Alpha/Sigma are None until a model is estimated or pasted. */
@@ -6737,7 +6738,9 @@ void MainWindow::updateGaloshUiState( void )
 
     ui->pushButtonGaloshNoiseFrame->setEnabled( loaded );
     ui->label_GaloshNoiseFrame->setEnabled( loaded );
-    ui->label_GaloshNoiseFrame->setText( tr( "Noise frame: %1" ).arg( galoshCurrentNoiseFrame() ) );
+    /* Frame numbers shown in the UI start at 1; the stored noise frame stays
+     * 0-based (session format unchanged). */
+    ui->label_GaloshNoiseFrame->setText( tr( "Noise frame: %1" ).arg( galoshCurrentNoiseFrame() + 1 ) );
 }
 
 int MainWindow::galoshCurrentNoiseFrame( void )

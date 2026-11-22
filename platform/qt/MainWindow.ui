@@ -6071,7 +6071,7 @@ QGroupBox::indicator:checked:disabled {
                    <item row="1" column="0" colspan="3">
                     <widget class="NoScrollSlider" name="horizontalSliderGaloshChroma">
                      <property name="enabled">
-                      <bool>false</bool>
+                      <bool>true</bool>
                      </property>
                      <property name="minimum">
                       <number>0</number>
@@ -6152,7 +6152,7 @@ QGroupBox::indicator:checked:disabled {
                    <item row="1" column="0" colspan="3">
                     <widget class="NoScrollSlider" name="horizontalSliderGaloshChromaPreserve">
                      <property name="enabled">
-                      <bool>false</bool>
+                      <bool>true</bool>
                      </property>
                      <property name="maximum">
                       <number>100</number>
@@ -6199,7 +6199,7 @@ QGroupBox::indicator:checked:disabled {
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="0">
+                   <item row="1" column="0" colspan="2">
                     <widget class="QLabel" name="label_GaloshAlphaText">
                      <property name="font">
                       <font>
@@ -6207,14 +6207,14 @@ QGroupBox::indicator:checked:disabled {
                       </font>
                      </property>
                      <property name="toolTip">
-                      <string>Shot-noise gain in Var(x) = alpha*x + sigma.</string>
+                      <string>Shot-noise gain in Var(x) = alpha*x + sigma^2.</string>
                      </property>
                      <property name="text">
-                      <string>Alpha: shot-noise gain</string>
+                      <string>Alpha</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="1">
+                   <item row="2" column="0" colspan="2">
                     <widget class="QLineEdit" name="lineEditGaloshAlpha">
                      <property name="enabled">
                       <bool>false</bool>
@@ -6235,7 +6235,7 @@ QGroupBox::indicator:checked:disabled {
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="0">
+                   <item row="3" column="0" colspan="2">
                     <widget class="QLabel" name="label_GaloshSigmaText">
                      <property name="font">
                       <font>
@@ -6243,14 +6243,14 @@ QGroupBox::indicator:checked:disabled {
                       </font>
                      </property>
                      <property name="toolTip">
-                      <string>Gaussian read-noise variance in Var(x) = alpha*x + sigma.</string>
+                      <string>Gaussian read-noise variance in Var(x) = alpha*x + sigma^2.</string>
                      </property>
                      <property name="text">
-                      <string>Sigma: Gaussian read-noise variance</string>
+                      <string>Sigma</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="1">
+                   <item row="4" column="0" colspan="2">
                     <widget class="QLineEdit" name="lineEditGaloshSigma">
                      <property name="enabled">
                       <bool>false</bool>
@@ -6271,7 +6271,7 @@ QGroupBox::indicator:checked:disabled {
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="0" colspan="2">
+                   <item row="5" column="0" colspan="2">
                     <widget class="QPushButton" name="pushButtonGaloshNoiseFrame">
                      <property name="font">
                       <font>
@@ -6282,11 +6282,11 @@ QGroupBox::indicator:checked:disabled {
                       <string>Estimate the noise model from the frame currently shown in the viewer.</string>
                      </property>
                      <property name="text">
-                      <string>Set current frame for noise estimation</string>
+                      <string>Use current frame</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="4" column="0" colspan="2">
+                   <item row="6" column="0" colspan="2">
                     <widget class="QLabel" name="label_GaloshNoiseFrame">
                      <property name="font">
                       <font>
@@ -6294,7 +6294,7 @@ QGroupBox::indicator:checked:disabled {
                       </font>
                      </property>
                      <property name="text">
-                      <string>Noise frame: 0</string>
+                      <string>Noise frame: 1</string>
                      </property>
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
