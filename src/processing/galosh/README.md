@@ -120,3 +120,12 @@ metadata.  The 3x path is slower and is not used for filmstrip thumbnails.
   oracle.
 - `galosh_cpu.h`: SSE includes are guarded for non-x86 builds.
 - `galosh_cpu.h`: per-call diagnostic prints were removed.
+- `galosh_cpu.h`: `gat_build_inverse_table()` skips the rebuild when the clip
+  model `(alpha, sigma_sq)` is unchanged (the table depends only on those two
+  values; without the guard every denoised frame paid a full rebuild).
+- `galosh_cpu.h`: the inverse-LUT Poisson sum is truncated to
+  `k in [lambda - 10*sqrt(lambda), lambda + 10*sqrt(lambda)]` with the starting
+  log-probability seeded directly via `lgamma` (dropped terms carry weight
+  < 1e-15 each; the old loop started at `k = 0` where `exp(-lambda)` underflows
+  to exactly `0.0` for large lambda).  The outer 4096-entry loop is parallelized
+  with OpenMP.

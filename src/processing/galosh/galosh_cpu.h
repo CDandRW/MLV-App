@@ -1235,25 +1235,59 @@ static const double gh_weights[10] = {
 
 static void gat_build_inverse_table(const float alpha, const float sigma_sq)
 {
+  /* Cache guard: the table depends only on (alpha, sigma_sq).  The clip noise
+   * model is fixed per clip, so without this guard every denoised frame (and
+   * every thumbnail) pays a full rebuild.  For low-noise clips (alpha ~ 4e-5)
+   * one build is ~5e8 log/exp iterations (~6 s on one thread). */
+  if(gat_inv_table.valid
+     && gat_inv_table.alpha == alpha
+     && gat_inv_table.sigma_raw == (float)sqrt(fmax((double)sigma_sq, 1e-20)))
+    return;
+
   const double a = (double)alpha;
   const double sq = (double)sigma_sq;
   const double sig = sqrt(fmax(sq, 1e-20));
   const double y_break_d = -0.375 * a;
   const double t_break_d = 2.0 * sig / a;
 
+  DT_OMP_FOR()
   for(int i = 0; i < GAT_INV_TABLE_SIZE; i++)
   {
     const double x_val = (double)i / (double)(GAT_INV_TABLE_SIZE - 1); /* [0, 1] */
     const double lambda = x_val / a;  /* Poisson rate */
 
-    /* Summation over Poisson distribution: E[T(Poisson(lambda)*alpha + N(0, sigma_sq))] */
+    /* Summation over Poisson distribution: E[T(Poisson(lambda)*alpha + N(0, sigma_sq))].
+     * Truncated to k in [lambda - 10*sqrt(lambda), lambda + 10*sqrt(lambda)]: terms
+     * outside carry weight < 1e-15 each (below float precision once accumulated),
+     * while the old loop started at k = 0 where exp(-lambda) underflows to exactly
+     * 0.0 for large lambda -- ~90% of the old iterations computed 0.0 * eg. */
     double expected_gat = 0.0;
-    const int k_max = (int)(lambda + 8.0 * sqrt(fmax(lambda, 1.0))) + 20;
-    double log_prob = -lambda;  /* log P(0; lambda) */
-
-    for(int k = 0; k <= k_max; k++)
+    int k_lo, k_hi;
+    double log_prob;
+    double log_lam = 0.0;
+    if(lambda <= 0.0)
     {
-      if(k > 0) log_prob += log(lambda) - log((double)k);
+      /* Poisson(0): P(0) = 1, all higher terms are exactly zero. */
+      k_lo = 0;
+      k_hi = 0;
+      log_prob = 0.0;
+    }
+    else
+    {
+      const double lam_sqrt = sqrt(lambda);
+      log_lam = log(lambda);
+      k_lo = (int)fmax(0.0, lambda - 10.0 * lam_sqrt);
+      k_hi = (int)(lambda + 10.0 * lam_sqrt) + 20;
+      /* Seed log P(k_lo; lambda) directly instead of iterating up from k = 0:
+       * log P(k) = -lambda + k*log(lambda) - lgamma(k+1).  Dropped terms carry
+       * total weight ~1e-13, so the table matches the untruncated sum to ~1 ulp;
+       * denoised-output impact is ~1e-7, far below the 1e-4 DNG tolerance. */
+      log_prob = -lambda + (double)k_lo * log_lam - lgamma((double)k_lo + 1.0);
+    }
+
+    for(int k = k_lo; k <= k_hi; k++)
+    {
+      if(k > k_lo) log_prob += log_lam - log((double)k);
       const double prob = exp(log_prob);
       if(prob < 1e-15 && k > (int)lambda + 1) break;
 
