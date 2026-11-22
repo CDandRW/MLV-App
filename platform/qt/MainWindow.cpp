@@ -6799,6 +6799,7 @@ void MainWindow::galoshMaybeEstimateNoiseModel( int frameIndex, ReceiptSettings 
 {
     if( !m_fileLoaded || !m_pMlvObject || !m_pProcessingObject ) return;
     if( m_setSliders ) return;
+    if( m_inOpeningProcess ) return;
     if( m_pProcessingObject->galoshLuma == 0 ) return;
     if( m_pProcessingObject->galoshNoiseValid ) return;
     galoshEstimateNoiseModel( frameIndex, receipt );
@@ -6919,7 +6920,11 @@ void MainWindow::on_horizontalSliderGaloshLuma_valueChanged(int position)
     processingSetGaloshLuma( m_pProcessingObject, position );
     ui->label_GaloshLuma->setText( QString("%1").arg( position ) );
     updateGaloshUiState();
-    if( position > 0 )
+    /* ACTIVE_RECEIPT dereferences the session clip list, which is empty at
+     * startup (e.g. a GALOSH-enabled default receipt applied before any clip
+     * is loaded).  The estimator itself no-ops without a loaded file, so skip
+     * it here too. */
+    if( position > 0 && SESSION_CLIP_COUNT > 0 )
     {
         galoshMaybeEstimateNoiseModel( ACTIVE_RECEIPT->galoshNoiseFrame(),
                                        ACTIVE_RECEIPT );
